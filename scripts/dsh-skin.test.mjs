@@ -80,7 +80,8 @@ test('registry includes the configurable Claude Code skin', () => {
 })
 
 test('portable path helpers cover missing HOME, scoped packages and Windows junctions', () => {
-  assert.equal(resolveDshHome({}, '/tmp/example-home'), join('/tmp/example-home', '.dsh'))
+  const exampleHome = join(tmpdir(), 'example-home')
+  assert.equal(resolveDshHome({}, exampleHome), join(exampleHome, '.dsh'))
   assert.equal(packageTarget('/tmp/modules', '@deepseek-ai/example'), join('/tmp/modules', '@deepseek-ai', 'example'))
   assert.equal(symlinkType('win32'), 'junction')
   assert.equal(symlinkType('linux'), 'dir')
