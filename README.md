@@ -6,10 +6,6 @@
 
 ![DSH 外观设置总览](docs/images/appearance-overview.png)
 
-![调色盘与手动颜色输入](docs/images/appearance-color-controls.jpg)
-
-以上两张图均来自本地 Harness 实际界面。
-
 ## 功能
 
 - **一级外观入口**：与「通用设置」并列，沿用 Harness 官方设置框架。

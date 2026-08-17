@@ -6,8 +6,6 @@ A first-class Appearance page and configurable Claude Code skin for DeepSeek Har
 
 ![DSH Appearance overview](docs/images/appearance-overview.png)
 
-![Color controls with editable hex values](docs/images/appearance-color-controls.jpg)
-
 ## Features
 
 - **First-class Appearance entry** beside General Settings, using the official Harness settings shell.
@@ -46,8 +44,6 @@ dsh-theme-v1:{"format":"dsh-claude-code-appearance","version":2,"colors":{"light
 ```text
 dsh-theme-v1:{"format":"dsh-claude-code-appearance","version":2,"colors":{"light":{"accent":"#2563eb","canvas":"#f6f8fb","surface":"#f2f3f5","foreground":"#172033"},"dark":{"accent":"#70a5ff","canvas":"#111827","surface":"#191e2a","foreground":"#e5edf7"}},"fonts":{"ui":"Avenir Next","code":"Menlo"}}
 ```
-
-Both screenshots above were captured from the real local Harness UI.
 
 ## Install
 
