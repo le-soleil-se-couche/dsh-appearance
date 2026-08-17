@@ -1,0 +1,21 @@
+{
+  "name": "dsh-appearance",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "为 DSH 配置外观功能。支持主题配色、本地字体、配置导入复制与皮肤切换。",
+  "packageManager": "pnpm@9.15.9",
+  "scripts": {
+    "generate": "node scripts/skin-center-bundles",
+    "generate:check": "node scripts/skin-center-bundles --check",
+    "build": "pnpm --filter @deepseek-ai/dsh-client-ui-skin-claude-code run build && node scripts/skin-center-bundles && pnpm --filter @deepseek-ai/dsh-client-ui-skin-center run build",
+    "test": "pnpm --filter @deepseek-ai/dsh-client-ui-skin-claude-code run test && pnpm --filter @deepseek-ai/dsh-client-ui-skin-center run test && node --test scripts/dsh-skin.test.mjs",
+    "typecheck": "pnpm --filter @deepseek-ai/dsh-client-ui-skin-center run typecheck",
+    "check": "pnpm run generate:check && pnpm run typecheck && pnpm run test"
+  },
+  "devDependencies": {
+    "lightningcss": "^1.32.0",
+    "tsdown": "^0.22.2"
+  },
+  "license": "BSD-3-Clause"
+}

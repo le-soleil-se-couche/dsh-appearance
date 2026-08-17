@@ -1,0 +1,20 @@
+{
+  // Standalone compiler shape for the skin-center bundle (self-contained port
+  // of the checkout's tsconfig.base.client.json — no monorepo extends).
+  // Builds transpile-only with tsdown; `pnpm typecheck` validates the source
+  // separately with the package-local Node and React declarations.
+  "compilerOptions": {
+    "target": "es2024",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "types": ["node", "react"],
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowImportingTsExtensions": true,
+    "strict": true,
+    "noEmit": true
+  },
+  "include": ["src"]
+}

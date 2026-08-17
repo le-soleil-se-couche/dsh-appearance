@@ -1,0 +1,6 @@
+# skin-center bundle patch: inserts its dshClient row into the web plugin roster.
+# Install this leaf package from a complete repository clone with a local
+# link path so the host-side CLI fallback and sibling skin remain available.
+- insert:
+    - id: ui-skin-center
+      name: '@deepseek-ai/dsh-client-ui-skin-center'
