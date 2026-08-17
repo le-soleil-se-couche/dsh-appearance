@@ -111,25 +111,25 @@ async function call(
 }
 
 describe('skin-center routes', () => {
-  it('uses PATH first and does not touch the repo fallback on success', async () => {
+  it('uses PATH first on POSIX and does not touch the repo fallback on success', async () => {
     const calls: Array<{ file: string; args: string[] }> = []
     const command: DshSkinCommand = async (file, args) => {
       calls.push({ file, args })
       return 'qq98\n'
     }
-    const run = createDshSkinRunner(command, '/repo/scripts/dsh-skin')
+    const run = createDshSkinRunner(command, '/repo/scripts/dsh-skin', 'linux')
     await expect(run(['current'])).resolves.toBe('qq98\n')
     expect(calls).toEqual([{ file: 'dsh-skin', args: ['current'] }])
   })
 
-  it('falls back to the repo-local script only for PATH ENOENT', async () => {
+  it('falls back to the repo-local script only for PATH ENOENT on POSIX', async () => {
     const calls: Array<{ file: string; args: string[] }> = []
     const command: DshSkinCommand = async (file, args) => {
       calls.push({ file, args })
       if (file === 'dsh-skin') throw Object.assign(new Error('spawn ENOENT'), { code: 'ENOENT' })
       return 'wrote patch\n'
     }
-    const run = createDshSkinRunner(command, '/repo/scripts/dsh-skin')
+    const run = createDshSkinRunner(command, '/repo/scripts/dsh-skin', 'linux')
     await expect(run(['use', 'qq98'])).resolves.toBe('wrote patch\n')
     expect(calls).toEqual([
       { file: 'dsh-skin', args: ['use', 'qq98'] },
