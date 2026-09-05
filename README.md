@@ -2,6 +2,8 @@
 
 中文 | [English](README.en.md)
 
+本分支为新版 SDK 的源码适配预览，尚未完成目标宿主验收。依赖声明与已提交的 `lib/` 产物仍需配套更新，当前分支仅供审阅；日常安装请使用 `main`。
+
 为 DeepSeek Harness 提供一级「外观」设置页和可配置的 Claude Code 皮肤。配色、主题模式、本地字体、复制/导入与皮肤切换都集中在 **设置 → 外观**，不再埋在三层插件菜单里。
 
 ![DSH 外观设置总览](docs/images/appearance-overview.png)

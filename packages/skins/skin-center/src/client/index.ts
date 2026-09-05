@@ -1,8 +1,9 @@
 /** Browser half: a first-class, host-navigated Appearance settings section. */
 
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import type { ThemeRuntime } from '@deepseek-ai/dsh-client-ui-theme/client'
 import type {} from '@deepseek-ai/dsh-client-locale/client'
+import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
 import { AppearanceRuntime, type AppearanceStorage } from './appearance-runtime.ts'
 import { SkinCenter, type SkinCenterInjected } from './SkinCenter.tsx'
@@ -65,7 +66,7 @@ export function apply(ctx: ClientContext): void {
     appearance.dispose()
   }, 'ui-skin-center: appearance lifecycle')
 
-  const theme = ctx.get('theme') as ThemeRuntime
+  const theme = ctx.theme as ThemeRuntime
   const injected = (): SkinCenterInjected => ({
     controller,
     appearance,

@@ -2,6 +2,8 @@
 
 [中文](README.md) | English
 
+This branch is a source-only preview of newer SDK compatibility. Target-host acceptance is incomplete, and dependency declarations and checked-in `lib/` artifacts still require matching updates. Use `main` for normal installation; this branch is for review.
+
 A first-class Appearance page and configurable Claude Code skin for DeepSeek Harness. Theme mode, colors, local fonts, copy/import, and skin switching now live under **Settings → Appearance** instead of a three-level plugin menu.
 
 ![DSH Appearance overview](docs/images/appearance-overview.png)
