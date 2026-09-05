@@ -1,8 +1,9 @@
 /** Browser half: a first-class, host-navigated Appearance settings section. */
 
 import type { Context as ClientContext } from '@deepseek-ai/cordis'
-import type { ThemeRuntime } from '@deepseek-ai/dsh-client-ui-theme/client'
+import type {} from '@deepseek-ai/dsh-client-ui-theme/client'
 import type {} from '@deepseek-ai/dsh-client-locale/client'
+import type {} from '@deepseek-ai/dsh-client-modules/client'
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
 import { AppearanceRuntime, type AppearanceStorage } from './appearance-runtime.ts'
@@ -48,7 +49,7 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 }
 
 /** Services used directly by the section. */
-export const inject = ['slots', 'locale', 'theme']
+export const inject = ['slots', 'locale', 'theme', 'modules']
 
 const browserStorage: AppearanceStorage = {
   getItem: key => window.localStorage.getItem(key),
@@ -60,13 +61,16 @@ export function apply(ctx: ClientContext): void {
   ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'ui-skin-center: dictionaries')
 
   const appearance = new AppearanceRuntime(document.body, browserStorage)
-  const controller = new TryOnController({ afterRestore: () => { appearance.reapply() } })
+  const controller = new TryOnController({
+    modules: ctx.modules,
+    afterRestore: () => { appearance.reapply() },
+  })
   ctx.effect(() => () => {
     controller.exit()
     appearance.dispose()
   }, 'ui-skin-center: appearance lifecycle')
 
-  const theme = ctx.theme as ThemeRuntime
+  const theme = ctx.theme
   const injected = (): SkinCenterInjected => ({
     controller,
     appearance,

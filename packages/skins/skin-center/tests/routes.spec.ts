@@ -7,6 +7,7 @@
 import { createServer, request as httpRequest } from 'node:http'
 import { describe, expect, it } from 'vitest'
 import { basename } from 'node:path'
+import { existsSync } from 'node:fs'
 import type { AddressInfo } from 'node:net'
 import type { Server } from 'node:http'
 import type { WebRoute } from '@deepseek-ai/dsh-host-webserver'
@@ -111,6 +112,20 @@ async function call(
 }
 
 describe('skin-center routes', () => {
+  it('serves the sibling skin through the built host entry in a complete checkout', async () => {
+    const { makeSkinCenterRoutes: builtRoutes } = await import('../lib/index.js')
+    const server = await serve(builtRoutes({ run: async () => 'none' }))
+    try {
+      expect(existsSync(DSH_SKIN_REPO_FALLBACK)).toBe(true)
+      const response = await call(server.port, 'GET', '/api/skin-center/bundle/claude-code')
+      expect(response.status).toBe(200)
+      expect(response.raw).toContain('@deepseek-ai/dsh-client-ui-skin-claude-code')
+      expect(response.raw).toContain('window.__ModuleLoader__.load')
+    } finally {
+      await server.close()
+    }
+  })
+
   it('uses PATH first on POSIX and does not touch the repo fallback on success', async () => {
     const calls: Array<{ file: string; args: string[] }> = []
     const command: DshSkinCommand = async (file, args) => {

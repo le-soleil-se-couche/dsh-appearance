@@ -86,7 +86,7 @@ dsh-theme-v1:{"format":"dsh-claude-code-appearance","version":2,"colors":{...},"
 ## 皮肤试穿与应用
 
 - 试穿：`/api/skin-center/bundle/<id>` 通过同源 script 提供皮肤的 `lib/client.js`；bundle
-  在页面自身 `window.__ModuleLoader__` 注册，随后由 `window.__DSH_MODULES__.import`
+  在页面自身 `window.__ModuleLoader__` 注册，随后由官方 `ctx.modules.import`
   物化。没有 `eval`，冷启动也不解析皮肤大资源。
 - 退出：运行试穿 disposer、清理模块与样式，再恢复激活皮肤的 body 属性、内联背景和已摘除
   chrome。外观私有变量随后重新断言，避免试穿期间的颜色或字体修改被旧 body 快照覆盖。
@@ -104,8 +104,14 @@ dsh plugin --profile web add link:./packages/skins/claude-code
 node ./scripts/dsh-skin use claude-code
 ```
 
-本包需要官方 NPM SDK；`dsh.client.inject` 声明 runtime、locale、settings 与 theme，
-primitives 作为平台模块由本包直接声明依赖。构建不引用任何 DSH 源码 checkout。
+本包使用官方 NPM SDK `0.1.2-rc.1` 与 Cordis `4.0.2`；开发依赖固定版本，peer dependencies
+声明宿主服务契约。`dsh.client.inject` 声明 modules、renderer、locale、settings 与 theme，
+primitives 与 slots/store 使用官方平台模块。构建不引用 DSH 源码 checkout 或本地替身类型。
+
+安装需要保留完整的本仓库 checkout：`scripts/dsh-skin` 是 host 命令回退路径，
+`packages/skins/claude-code` 是试穿的同级资源目录。leaf package 的 `files` 不包含整个仓库，
+因此 `pnpm pack` 只核对发布入口与清单；独立安装 leaf 压缩包不提供完整试穿和应用功能。
+本仓库仅内置 Claude Code，不能覆盖已包含其他皮肤的 `dsh-web-ui` 合集。
 
 ## 包内验证
 
@@ -119,7 +125,10 @@ pnpm --filter @deepseek-ai/dsh-client-ui-skin-center run test
 未来版本拒绝、文本颜色原子校验、非法导入原子性和 body 变量恢复；
 `tests/local-fonts.spec.ts` 覆盖可用、unsupported、denied、去重与排序；
 `tests/appearance-css.spec.ts` 锁定跨皮肤可用的局部 CSS scope；`tests/try-on.spec.ts` 覆盖真实
-皮肤 bundle 的试穿/回滚；`tests/routes.spec.ts` 覆盖 host API、安全边界和 CLI runner。
+皮肤 bundle 的试穿/回滚；`tests/routes.spec.ts` 覆盖 host API、安全边界、CLI runner 与完整
+checkout 下的构建入口资源路径。`tests/sdk-compat.spec.ts` 使用官方 NPM renderer、locale、
+theme 和 primitives 执行已构建 bundle，验证延迟插槽注册、页面渲染、主题事件与写入入口、
+中英切换和卸载恢复；仅 Host 持久化传输与空会话源使用测试夹具，不接触真实 profile。
 
 ## 目录
 

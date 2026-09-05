@@ -2,7 +2,8 @@
 
 中文 | [English](README.en.md)
 
-本分支为新版 SDK 的源码适配预览，尚未完成目标宿主验收。依赖声明与已提交的 `lib/` 产物仍需配套更新，当前分支仅供审阅；日常安装请使用 `main`。
+使用官方 NPM SDK `0.1.2-rc.1`，依赖锁定文件与 `lib/` 发布入口同步构建。
+`0.1.3-alpha.1` 不在当前支持范围；其 SDK 子包须公开可安装并完成独立验收后再升级。
 
 为 DeepSeek Harness 提供一级「外观」设置页和可配置的 Claude Code 皮肤。配色、主题模式、本地字体、复制/导入与皮肤切换都集中在 **设置 → 外观**，不再埋在三层插件菜单里。
 
@@ -49,12 +50,14 @@ dsh-theme-v1:{"format":"dsh-claude-code-appearance","version":2,"colors":{"light
 
 ## 安装
 
-要求：Node.js 22、pnpm 9、DeepSeek Harness `0.1.0-rc.6`。
+要求：Node.js 22、pnpm 9、DeepSeek Harness `0.1.2-rc.1`。保留完整仓库目录并通过
+`link:` 安装：host 的应用命令依赖仓库内 `scripts/dsh-skin`，试穿依赖同级皮肤目录。
+单独复制或打包安装某个 leaf package 无法提供这两项完整功能。
 
 ```sh
 git clone https://github.com/le-soleil-se-couche/dsh-appearance.git
 cd dsh-appearance
-pnpm install
+pnpm install --frozen-lockfile
 pnpm build
 
 dsh plugin --profile web add link:./packages/skins/skin-center
@@ -63,9 +66,9 @@ node ./scripts/dsh-skin use claude-code
 dsh web
 ```
 
-如果当前 profile 已安装旧仓库 `dsh-skin-claude-code`，或已通过 `dsh-skins` / `dsh-web-ui-all`
-加载旧版 `skin-center`，请先移除对应旧包，再安装本仓库的两个单元。新旧版本使用相同的
-Cordis/plugin id，不能并装。
+新旧 `skin-center` 使用相同的 Cordis/plugin id，不能并装。当前 profile 已经通过
+`dsh-skins` / `dsh-web-ui-all` 加载外观页时，需要先在原有合集内安排兼容升级；本仓库仅包含
+Claude Code 皮肤，不能替代带有其他皮肤或插件的合集。上面的命令适用于没有重复外观插件的 profile。
 
 恢复官方外观：
 
@@ -85,7 +88,7 @@ node ./scripts/dsh-skin use official
 ## 开发与验证
 
 ```sh
-pnpm install
+pnpm install --frozen-lockfile
 pnpm build
 pnpm typecheck
 pnpm test
@@ -99,12 +102,13 @@ pnpm generate:check
 
 ## 当前平台边界
 
-Harness `0.1.0-rc.6` 的 `settings.section` 插槽尚未提供导航图标字段，因此左侧「外观」条目暂时使用宿主默认齿轮图标。插件没有修改 Harness 源码、`node_modules` 或设置导航 DOM。
+Harness `0.1.2-rc.1` 的 `settings.section` 插槽尚未提供导航图标字段，因此左侧「外观」条目暂时使用宿主默认齿轮图标。插件沿用官方 renderer、locale、theme 和 primitives，无需修改 Harness 源码或设置导航 DOM。
 
 - macOS：支持浏览器 Local Font Access；host 还可回退到 `fc-list` 或 `system_profiler`。
 - Linux：应用链和路径使用 Node 跨平台调用；host 字体列表需要 `fontconfig`，缺少时仍可使用浏览器枚举或手动输入。
 - Windows：repo CLI 由 Node 直接启动，DSH `.cmd` 通过 shell 调用，默认目录使用 `os.homedir()`，profile package link 使用 `junction`；字体可使用 Chromium Local Font Access，host 再回退到 Windows Fonts registry。
-- 当前真实交互验证在 macOS 完成；Windows/Linux 分支已有单元测试，并配置了三平台 GitHub Actions matrix。首次公开 push 后以 CI 结果为准，仍欢迎对应平台的实机反馈。
+- macOS 已在独立官方宿主中验证主题切换、配色刷新保留、合法导入与错误导入拒绝、试穿/退出/再次试穿，以及皮肤应用和恢复默认。官方 renderer、locale、theme、primitives 和 modules 的原生测试覆盖中英切换与卸载恢复。Windows/Linux 仍需各自验收；已配置三平台 GitHub Actions matrix。
+- 持久皮肤切换依赖宿主加载配置。`patchReload: startup` 模式下，应用或恢复后需要重启宿主；浏览器刷新本身不会重载宿主配置。本机验证使用该模式，不承诺热重载可用。
 
 ## License
 

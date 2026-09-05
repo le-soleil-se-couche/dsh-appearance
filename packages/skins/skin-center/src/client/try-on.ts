@@ -6,7 +6,7 @@
  * the skin's prebuilt `lib/client.js` as a same-origin script (mirroring
  * the kernel's own defaultLoadBundle — see dsh-client-modules), and its
  * body calls `window.__ModuleLoader__.load({id, factory})`, which only
- * REGISTERS the factory. `window.__DSH_MODULES__.import(package)` (the
+ * REGISTERS the factory. The injected `ctx.modules.import(package)` (the
  * kernel's ClientModuleSystem, contract C5/C6) then materializes it — which
  * auto-injects the skin's CSS `<style data-plugin>` tag — and
  * `surface.apply(miniCtx)` mounts the skin exactly as the fiber system
@@ -33,6 +33,7 @@
  */
 
 import { SKIN_CENTER_ENTRIES, type SkinCenterEntry } from './generated/skins.ts'
+import type { ClientModuleLoader } from '@deepseek-ai/dsh-client-modules/client'
 
 /** Body-level backdrop properties skins may write inline (blue-fantasy). */
 const BACKDROP_PROPS = [
@@ -62,10 +63,6 @@ const NEUTRALIZE_CSS: Record<string, string> = {
 /** The window surfaces the boot protocol installs (manifest.ts contract). */
 interface SkinCenterWindow {
   __DSH_BOOT__?: { entries?: Array<{ id: string }> }
-  __DSH_MODULES__?: {
-    import(specifier: string): Promise<unknown>
-    invalidate(id: string): void
-  }
 }
 
 /** Host base path of the skin bundle route (registered by src/routes.ts). */
@@ -195,12 +192,17 @@ export class TryOnController {
   /** Re-assert plugin-owned appearance values after restoring a body snapshot. */
   private readonly afterRestore: () => void
 
+  /** Native module service; official-only previews do not need bundle loading. */
+  private readonly modules: Pick<ClientModuleLoader, 'import' | 'invalidate'> | undefined
+
   constructor(options: {
+    modules?: Pick<ClientModuleLoader, 'import' | 'invalidate'>
     loadBundle?: (entry: SkinCenterEntry) => Promise<void>
     afterRestore?: () => void
   } = {}) {
     this.loadBundle = options.loadBundle ?? (entry => loadBundleScript(`${BUNDLE_ROUTE}/${encodeURIComponent(entry.id)}`))
     this.afterRestore = options.afterRestore ?? (() => {})
+    this.modules = options.modules
   }
   /** The skin currently being tried on, if any. */
   get trying(): SkinCenterEntry | null {
@@ -263,8 +265,8 @@ export class TryOnController {
 
   /** Execute + materialize + mount the target skin through the real loader. */
   private async loadAndApply(entry: SkinCenterEntry): Promise<() => void> {
-    const modules = (window as SkinCenterWindow).__DSH_MODULES__
-    if (modules === undefined) throw new Error('skin-center: window.__DSH_MODULES__ missing')
+    const modules = this.modules
+    if (modules === undefined) throw new Error('skin-center: ctx.modules service unavailable')
     // This try-on session owns the module record for the package for its
     // whole life (a try-on of the ACTIVE skin is rejected above, and the GUI
     // never hosts two skins at once). Drop any factory a crashed earlier
@@ -273,7 +275,7 @@ export class TryOnController {
     // loader, whose load() throws on a duplicate id.
     modules.invalidate(entry.package)
     await this.loadBundle(entry)
-    const surface = await modules.import(entry.package)
+    const surface = await modules.import(entry.package, '', {})
     const apply = (surface as { apply?: (ctx: unknown) => unknown }).apply
     if (typeof apply !== 'function') {
       throw new Error(`skin-center: "${entry.package}" client bundle exports no apply`)
@@ -298,8 +300,7 @@ export class TryOnController {
 
   /** Drop the tried-on module record + its injected style tag. */
   private cleanupModule(entry: SkinCenterEntry): void {
-    const modules = (window as SkinCenterWindow).__DSH_MODULES__
-    modules?.invalidate(entry.package)
+    this.modules?.invalidate(entry.package)
     for (const el of document.querySelectorAll(`style[data-plugin=${JSON.stringify(entry.package)}]`)) {
       el.remove()
     }

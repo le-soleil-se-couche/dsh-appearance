@@ -2,7 +2,8 @@
 
 [中文](README.md) | English
 
-This branch is a source-only preview of newer SDK compatibility. Target-host acceptance is incomplete, and dependency declarations and checked-in `lib/` artifacts still require matching updates. Use `main` for normal installation; this branch is for review.
+Uses the official NPM SDK `0.1.2-rc.1`, with a matching lockfile and rebuilt `lib/` entrypoints.
+`0.1.3-alpha.1` is outside the supported baseline until its SDK packages are publicly installable and separately validated.
 
 A first-class Appearance page and configurable Claude Code skin for DeepSeek Harness. Theme mode, colors, local fonts, copy/import, and skin switching now live under **Settings → Appearance** instead of a three-level plugin menu.
 
@@ -49,12 +50,14 @@ dsh-theme-v1:{"format":"dsh-claude-code-appearance","version":2,"colors":{"light
 
 ## Install
 
-Requirements: Node.js 22, pnpm 9, and DeepSeek Harness `0.1.0-rc.6`.
+Requirements: Node.js 22, pnpm 9, and DeepSeek Harness `0.1.2-rc.1`. Keep the complete checkout and
+install with `link:`: applying a skin uses `scripts/dsh-skin`, and try-on reads the sibling skin directory.
+A copied or packed leaf package alone cannot provide those two complete features.
 
 ```sh
 git clone https://github.com/le-soleil-se-couche/dsh-appearance.git
 cd dsh-appearance
-pnpm install
+pnpm install --frozen-lockfile
 pnpm build
 
 dsh plugin --profile web add link:./packages/skins/skin-center
@@ -63,9 +66,10 @@ node ./scripts/dsh-skin use claude-code
 dsh web
 ```
 
-If the active profile already loads the old `dsh-skin-claude-code` repository, or an older `skin-center`
-through `dsh-skins` / `dsh-web-ui-all`, remove those packages before installing both units from this
-repository. The old and new packages share the same Cordis/plugin ids and cannot be installed together.
+Old and new `skin-center` versions share the same Cordis/plugin id and cannot be installed together.
+If the active profile loads Appearance through `dsh-skins` / `dsh-web-ui-all`, plan its compatibility
+upgrade within that existing collection. This repository contains only the Claude Code skin and cannot
+replace a collection with other skins or plugins. The commands above assume no duplicate Appearance plugin.
 
 Restore the official look:
 
@@ -84,7 +88,7 @@ node ./scripts/dsh-skin use official
 ## Development
 
 ```sh
-pnpm install
+pnpm install --frozen-lockfile
 pnpm build
 pnpm typecheck
 pnpm test
@@ -98,12 +102,13 @@ Installable units:
 
 ## Current platform boundary
 
-The Harness `0.1.0-rc.6` `settings.section` contract does not expose a navigation-icon field, so the Appearance row currently uses the host's default gear. This project does not patch Harness source, `node_modules`, or the settings navigation DOM.
+The Harness `0.1.2-rc.1` `settings.section` contract does not expose a navigation-icon field, so the Appearance row currently uses the host's default gear. The plugin uses the official renderer, locale, theme and primitives APIs without patching Harness source or settings navigation DOM.
 
 - macOS: browser Local Font Access plus host fallback through `fc-list` or `system_profiler`.
 - Linux: portable Node-based apply paths; host font enumeration needs `fontconfig`, with browser enumeration and manual entry still available.
 - Windows: the repo CLI runs through Node, DSH `.cmd` shims use the shell, home resolution uses `os.homedir()`, profile package links use junctions, and the host can read the Windows Fonts registry.
-- Real interactive QA was completed on macOS. Windows/Linux branches have unit coverage and a three-platform GitHub Actions matrix; the first public push will provide the CI result. Real-device reports remain welcome.
+- An isolated official host on macOS has verified theme switching, palette persistence after refresh, valid import and invalid-import rejection, try-on/exit/repeated try-on, and persistent skin application and restoration. Native tests use the official renderer, locale, theme, primitives and modules to cover language switching and unload restoration. Windows/Linux require their own acceptance; a three-platform GitHub Actions matrix is configured.
+- Persistent skin changes depend on host configuration loading. With `patchReload: startup`, applying or restoring a skin requires a host restart; a browser refresh alone cannot reload the host configuration. Local acceptance used this mode and does not establish working hot reload.
 
 ## License
 

@@ -22,16 +22,22 @@ declare global {
     __ModuleLoader__?: {
       load(handoff: { id: string; factory: (require: (spec: string) => unknown) => unknown }): void
     }
-    __DSH_MODULES__?: {
-      import(id: string): Promise<{ apply?: (ctx: unknown) => unknown }>
-      invalidate(id: string): void
-    }
     __DSH_BOOT__?: { entries: Array<{ id: string }> }
   }
 }
 
 /** Minimal ClientModuleSystem stand-in: register factories, materialize on import. */
 const factories = new Map<string, (require: (spec: string) => unknown) => unknown>()
+const modules = {
+  async import(id: string) {
+    const factory = factories.get(id)
+    if (factory === undefined) throw new Error(`no factory for ${id}`)
+    return factory((spec) => { throw new Error(`unexpected require ${spec}`) })
+  },
+  invalidate(id: string) {
+    factories.delete(id)
+  },
+}
 
 beforeEach(() => {
   factories.clear()
@@ -42,16 +48,6 @@ beforeEach(() => {
     load(handoff) {
       if (factories.has(handoff.id)) throw new Error(`duplicate factory ${handoff.id}`)
       factories.set(handoff.id, handoff.factory)
-    },
-  }
-  window.__DSH_MODULES__ = {
-    async import(id) {
-      const factory = factories.get(id)
-      if (factory === undefined) throw new Error(`no factory for ${id}`)
-      return factory((spec) => { throw new Error(`unexpected require ${spec}`) }) as never
-    },
-    invalidate(id) {
-      factories.delete(id)
     },
   }
   delete window.__DSH_BOOT__
@@ -94,6 +90,7 @@ const bombBundle = [
 
 /** A controller whose bundle loading executes the real (or hand-built) bundle text. */
 const controller = (): TryOnController => new TryOnController({
+  modules,
   loadBundle: async target => {
     // The stub stands in for the host route's script execution.
     ;(0, eval)(target.id === 'bomb' ? bombBundle : bundleTextFor(target.id))
